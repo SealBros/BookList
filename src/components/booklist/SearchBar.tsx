@@ -15,7 +15,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <div className="flex items-center space-x-4 flex-grow">
       <input
         type="text"
-        className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md focus:outline-none h-[45px] border border-gray-300"
+        className="w-full bg-white text-gray-700 py-2 px-4 rounded-md focus:outline-none h-[45px] border border-gray-300"
         placeholder="제목 또는 저자를 검색해 주세요"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}

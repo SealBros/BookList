@@ -18,7 +18,6 @@ const Pagination: React.FC<PaginationProps> = ({
 
   const pageNumbers = [];
   let startPage, endPage;
-
   if (totalPages <= 5) {
     startPage = 1;
     endPage = totalPages;
@@ -66,7 +65,7 @@ const Pagination: React.FC<PaginationProps> = ({
           {number}
         </button>
       ))}
-      
+
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
