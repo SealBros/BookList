@@ -1,35 +1,31 @@
 import React from "react";
 import Image from "next/image";
+import { BookTypes } from "@/dtos/BookDto";
 
 interface BookInfoProps {
-  imageUrl: string;
-  title: string;
-  author: string;
-  publisher: string;
-  publishedDate: string;
-  description: string;
-  quantity: number;
-  order: number;
+  book: BookTypes; 
 }
 
-const BookInfo: React.FC<BookInfoProps> = ({
-  imageUrl,
-  title,
-  author,
-  publisher,
-  publishedDate,
-  description,
-  quantity,
-  order,
-}) => {
+const BookInfo: React.FC<BookInfoProps> = ({ book }) => {
+  const {
+    id,
+    image_url,
+    title,
+    author,
+    publisher,
+    published_date,
+    description,
+    quantity,
+  } = book;
+
   return (
     <div className="flex border p-6 rounded-lg shadow-sm max-w-[1200px] mx-auto bg-white">
       <div className="flex items-center space-x-4">
         <div className="bg-green-500 rounded-md w-10 h-10 flex items-center justify-center text-white text-sm font-bold shadow-md">
-          {order}
+          {id}
         </div>
         <Image
-          src={imageUrl}
+          src={image_url}
           alt="책 그림"
           width={160}
           height={240}
@@ -41,7 +37,8 @@ const BookInfo: React.FC<BookInfoProps> = ({
         <h2 className="text-xl font-bold mb-5">{title}</h2>
         <div className="flex items-center justify-between mb-2">
           <p className="text-gray-600">
-            저자: {author}, 출판사: {publisher}, 출간 날짜: {publishedDate}
+            저자: {author}, 출판사: {publisher}, 출간 날짜:{" "}
+            {new Date(published_date).toLocaleDateString()}
           </p>
           <p className="text-gray-800 font-semibold">
             <span className="text-sm font-normal text-gray-600">수량: </span>

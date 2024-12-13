@@ -1,55 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import SearchBar from "./SearchBar";
 import BookInfo from "./BookInfo";
-
-interface Book {
-  id: number;
-  imageUrl: string;
-  title: string;
-  author: string;
-  publisher: string;
-  publishedDate: string;
-  description: string;
-  quantity: number;
-}
+import BookFormModal from "../common/BookFormModal";
+import { BookTypes } from "@/dtos/BookDto";
 
 const BookListSection: React.FC = () => {
-  const books: Book[] = [
-    {
-      id: 1,
-      imageUrl: "/image/default.png",
-      title: "JavaScript의 모든 것",
-      author: "홍길동",
-      publisher: "예제 출판사",
-      publishedDate: "2023-01-01",
-      description: "JavaScript를 깊이 이해할 수 있는 책입니다.",
-      quantity: 5,
-    },
-    {
-      id: 2,
-      imageUrl: "/image/default.png",
-      title: "React의 정석",
-      author: "김코딩",
-      publisher: "React 출판사",
-      publishedDate: "2022-05-10",
-      description: "React를 마스터하기 위한 필독서.",
-      quantity: 10,
-    },
-    {
-      id: 3,
-      imageUrl: "/image/default.png",
-      title: "Node.js 실전 가이드",
-      author: "이서버",
-      publisher: "백엔드 출판사",
-      publishedDate: "2021-08-15",
-      description: "Node.js를 사용하여 백엔드 개발에 도전하세요.",
-      quantity: 7,
-    },
-  ];
-
+  const [books, setBooks] = useState<BookTypes[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 2; // 페이지당 표시할 책 수
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // 모달 열림 상태
+  const itemsPerPage = 10; // 페이지당 표시할 책 수 (10개로 설정)
+
+  // 책 데이터 가져오기
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const response = await axios.get<BookTypes[]>("/api/books"); // GET 요청
+        setBooks(response.data);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      }
+    };
+    fetchBooks();
+  }, []);
 
   // 검색 기능
   const filteredBooks = books.filter(
@@ -73,27 +47,28 @@ const BookListSection: React.FC = () => {
 
   return (
     <div className="max-w-[1200px] mx-auto p-6">
-      {/* 검색바 */}
-      <SearchBar
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        handleSearch={() => setCurrentPage(1)} // 검색 시 첫 페이지로 이동
-      />
+      {/* 검색바와 추가 버튼 */}
+      <div className="flex justify-between items-center space-x-4">
+        <SearchBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          handleSearch={() => setCurrentPage(1)} // 검색 시 첫 페이지로 이동
+        />
+        <button
+          onClick={() => setIsModalOpen(true)} // 추가 모드로 모달 열기
+          className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md w-[80px] h-[45px]"
+        >
+          추가
+        </button>
+      </div>
 
       {/* 책 목록 */}
       <div className="mt-6 space-y-4">
         {paginatedBooks.length > 0 ? (
-          paginatedBooks.map((book, index) => (
+          paginatedBooks.map((book) => (
             <BookInfo
               key={book.id}
-              order={startIndex + index + 1}
-              imageUrl={book.imageUrl}
-              title={book.title}
-              author={book.author}
-              publisher={book.publisher}
-              publishedDate={book.publishedDate}
-              description={book.description}
-              quantity={book.quantity}
+              book={book} // BookTypes 객체를 그대로 전달
             />
           ))
         ) : (
@@ -140,6 +115,14 @@ const BookListSection: React.FC = () => {
             &gt;
           </button>
         </div>
+      )}
+
+      {/* 추가 모달 */}
+      {isModalOpen && (
+        <BookFormModal
+          isEdit={false} // 추가 모드로 설정
+          onClose={() => setIsModalOpen(false)} // 모달 닫기
+        />
       )}
     </div>
   );

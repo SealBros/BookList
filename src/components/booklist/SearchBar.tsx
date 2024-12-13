@@ -25,12 +25,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
           }
         }}
       />
-      <button
-        onClick={handleSearch}
-        className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md w-[80px] h-[45px]"
-      >
-        검색
-      </button>
     </div>
   );
 };
