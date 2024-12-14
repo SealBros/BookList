@@ -15,3 +15,13 @@ export const createBook = async (payload: Partial<BookTypes>) => {
 export const updateBook = async (id: number, payload: Partial<BookTypes>) => {
   return axios.put(`${BASE_URL}/${id}`, payload);
 };
+
+export const fetchBooks = async (): Promise<BookTypes[]> => {
+  const response = await axios.get<BookTypes[]>(BASE_URL);
+  return response.data;
+};
+
+export const fetchBooksDetail = async (id: number): Promise<BookTypes> => {
+  const response = await axios.get<BookTypes>(`${BASE_URL}/${id}`);
+  return response.data;
+};

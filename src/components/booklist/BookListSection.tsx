@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import SearchBar from "./SearchBar";
 import BookInfo from "./BookInfo";
 import BookFormModal from "../common/BookFormModal";
 import { BookTypes } from "@/dtos/BookDto";
+import { fetchBooks } from "@/lib/axios/bookApi";
 
 const BookListSection: React.FC = () => {
   const [books, setBooks] = useState<BookTypes[]>([]);
@@ -13,15 +13,15 @@ const BookListSection: React.FC = () => {
   const itemsPerPage = 10;
 
   useEffect(() => {
-    const fetchBooks = async () => {
+    const loadBooks = async () => {
       try {
-        const response = await axios.get<BookTypes[]>("/api/books"); 
-        setBooks(response.data);
+        const data = await fetchBooks();
+        setBooks(data);
       } catch (error) {
         console.error("Error fetching books:", error);
       }
     };
-    fetchBooks();
+    loadBooks();
   }, []);
 
   const filteredBooks = books.filter(

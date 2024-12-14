@@ -4,6 +4,7 @@ import Image from "next/image";
 import axios from "axios";
 import { useRouter } from "next/router";
 import BookFormModal from "../common/BookFormModal";
+import { fetchBooksDetail } from "@/lib/axios/bookApi";
 
 interface BookDetailProps {
   id: number;
@@ -17,10 +18,10 @@ const BookDetailSection: React.FC<BookDetailProps> = ({ id }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const fetchBook = async () => {
+    const loadBook = async () => {
       try {
-        const response = await axios.get<BookTypes>(`/api/books/${id}`);
-        setBook(response.data);
+        const data = await fetchBooksDetail(id);
+        setBook(data);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching book details:", err);
@@ -29,7 +30,7 @@ const BookDetailSection: React.FC<BookDetailProps> = ({ id }) => {
       }
     };
 
-    fetchBook();
+    loadBook();
   }, [id]);
 
   const handleEdit = () => {
