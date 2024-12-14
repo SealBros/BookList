@@ -6,7 +6,7 @@ import { BookTypes } from "@/dtos/BookDto";
 interface BookFormProps {
   isEdit: boolean;
   bookData?: Partial<BookTypes>;
-  onClose: (updated: boolean) => void;
+  onClose: (updated: boolean) => void; // 수정 여부를 전달
 }
 
 const formatDate = (date: string | Date | null | undefined): string => {
@@ -31,7 +31,7 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
   });
 
   const [preview, setPreview] = useState<string | null>(bookData?.image_url || null);
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<File | null>(null); // File 객체 저장
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -60,24 +60,18 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
   };
 
   const handleSubmit = async () => {
-    const requiredFields: { [key: string]: string } = {
-      title: "책 제목",
-      author: "저자",
-      publisher: "출판사",
-      published_date: "출간 날짜",
-      quantity: "책 수량",
-      description: "책 줄거리",
-      image_url: "책 이미지",
-    };
+    
+    const missingFields: string[] = [];
   
-    const missingFields = Object.keys(requiredFields).filter((key) => {
-      if (key === "image_url" && !file && !form.image_url) return true;
-      return !form[key as keyof BookTypes];
-    });
+    if (!form.title) missingFields.push("책 제목");
+    if (!form.author) missingFields.push("저자");
+    if (!form.publisher) missingFields.push("출판사");
+    if (!form.published_date) missingFields.push("출간 날짜");
+    if (!form.description) missingFields.push("책 줄거리");
+    if (!file && !isEdit) missingFields.push("책 이미지");
   
     if (missingFields.length > 0) {
-      const missingFieldNames = missingFields.map((field) => requiredFields[field]).join(", ");
-      alert(`다음 항목을 입력하세요: ${missingFieldNames}`);
+      alert(`다음 항목을 입력하세요:\n- ${missingFields.join("\n- ")}`);
       return;
     }
   
@@ -111,8 +105,7 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
       console.error("Error:", error);
       alert("요청 중 오류가 발생했습니다.");
     }
-  };
-  
+  };  
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
