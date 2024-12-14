@@ -25,3 +25,7 @@ export const fetchBooksDetail = async (id: number): Promise<BookTypes> => {
   const response = await axios.get<BookTypes>(`${BASE_URL}/${id}`);
   return response.data;
 };
+
+export const deleteBook = async (id: number): Promise<void> => {
+  await axios.delete(`/api/books/${id}`);
+};

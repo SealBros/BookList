@@ -6,7 +6,7 @@ import { BookTypes } from "@/dtos/BookDto";
 interface BookFormProps {
   isEdit: boolean;
   bookData?: Partial<BookTypes>;
-  onClose: () => void;
+  onClose: (updated: boolean) => void; // 수정 여부를 전달
 }
 
 const formatDate = (date: string | Date | null | undefined): string => {
@@ -96,7 +96,7 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
         alert("책이 등록되었습니다.");
       }
 
-      onClose();
+      onClose(true); // 수정 또는 추가 완료 후 부모에 알림
     } catch (error) {
       console.error("Error:", error);
       alert("요청 중 오류가 발생했습니다.");
@@ -208,7 +208,7 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
         <div className="flex justify-end mt-4">
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => onClose(false)} // 수정 취소 시 알림
             className="px-4 py-2 bg-gray-200 text-sm rounded mr-2"
           >
             취소

@@ -1,28 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchBooks } from "@/lib/axios/bookApi";
 import SearchBar from "./SearchBar";
 import BookInfo from "./BookInfo";
 import BookFormModal from "../common/BookFormModal";
 import { BookTypes } from "@/dtos/BookDto";
-import { fetchBooks } from "@/lib/axios/bookApi";
 
 const BookListSection: React.FC = () => {
-  const [books, setBooks] = useState<BookTypes[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); 
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    const loadBooks = async () => {
-      try {
-        const data = await fetchBooks();
-        setBooks(data);
-      } catch (error) {
-        console.error("Error fetching books:", error);
-      }
-    };
-    loadBooks();
-  }, []);
+  const { data: books = [], isLoading, error, refetch } = useQuery<BookTypes[], Error>({
+    queryKey: ["books"],
+    queryFn: fetchBooks,
+  });
+
+  if (isLoading) return <p>로딩 중...</p>;
+  if (error) return <p className="text-red-500">책 목록을 불러오는 중 오류가 발생했습니다.</p>;
 
   const filteredBooks = books.filter(
     (book) =>
@@ -32,13 +28,15 @@ const BookListSection: React.FC = () => {
 
   const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedBooks = filteredBooks.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const paginatedBooks = filteredBooks.slice(startIndex, startIndex + itemsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    refetch();
   };
 
   return (
@@ -47,7 +45,7 @@ const BookListSection: React.FC = () => {
         <SearchBar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          handleSearch={() => setCurrentPage(1)} 
+          handleSearch={() => setCurrentPage(1)}
         />
         <button
           onClick={() => setIsModalOpen(true)}
@@ -70,50 +68,48 @@ const BookListSection: React.FC = () => {
         )}
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-6 space-x-2">
+      <div className="flex justify-center mt-6 space-x-2">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`py-2 px-4 rounded-md ${
+            currentPage === 1
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+          }`}
+        >
+          &lt;
+        </button>
+        {Array.from({ length: totalPages || 1 }, (_, i) => i + 1).map((page) => (
           <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+            key={page}
+            onClick={() => handlePageChange(page)}
             className={`py-2 px-4 rounded-md ${
-              currentPage === 1
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              page === currentPage
+                ? "bg-green-500 text-white"
                 : "bg-gray-100 text-gray-500 hover:bg-gray-200"
             }`}
           >
-            &lt;
+            {page}
           </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={`py-2 px-4 rounded-md ${
-                page === currentPage
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`py-2 px-4 rounded-md ${
-              currentPage === totalPages
-                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-            }`}
-          >
-            &gt;
-          </button>
-        </div>
-      )}
-      
+        ))}
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`py-2 px-4 rounded-md ${
+            currentPage === totalPages
+              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+          }`}
+        >
+          &gt;
+        </button>
+      </div>
+
       {isModalOpen && (
         <BookFormModal
-          isEdit={false} 
-          onClose={() => setIsModalOpen(false)}
+          isEdit={false}
+          onClose={handleModalClose}
         />
       )}
     </div>

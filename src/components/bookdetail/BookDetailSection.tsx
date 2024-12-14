@@ -1,55 +1,59 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BookTypes } from "@/dtos/BookDto";
 import Image from "next/image";
-import axios from "axios";
 import { useRouter } from "next/router";
 import BookFormModal from "../common/BookFormModal";
-import { fetchBooksDetail } from "@/lib/axios/bookApi";
+import { fetchBooksDetail, deleteBook } from "@/lib/axios/bookApi";
 
 interface BookDetailProps {
   id: number;
 }
 
 const BookDetailSection: React.FC<BookDetailProps> = ({ id }) => {
-  const [book, setBook] = useState<BookTypes | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const loadBook = async () => {
-      try {
-        const data = await fetchBooksDetail(id);
-        setBook(data);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching book details:", err);
-        setError("책 정보를 불러오지 못했습니다.");
-        setLoading(false);
-      }
-    };
-
-    loadBook();
-  }, [id]);
+  const {
+    data: book,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<BookTypes, Error>({
+    queryKey: ["bookDetail", id],
+    queryFn: () => fetchBooksDetail(id),
+  });
 
   const handleEdit = () => {
     setIsModalOpen(true);
   };
 
   const handleDelete = async () => {
+    const confirmed = window.confirm("삭제하시겠습니까?");
+    if (!confirmed) return;
+
     try {
-      await axios.delete(`/api/books/${id}`);
+      await deleteBook(id);
+      queryClient.invalidateQueries({ queryKey: ["books"] });
       alert("책이 성공적으로 삭제되었습니다.");
       router.push("/");
     } catch (err) {
-      console.error("Error deleting book:", err);
+      console.error("책 삭제 중 오류:", err);
       alert("책 삭제 중 오류가 발생했습니다.");
     }
   };
 
-  if (loading) return <p>로딩 중...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  const handleModalClose = async (updated: boolean) => {
+    setIsModalOpen(false);
+    if (updated) {
+      await refetch();
+      queryClient.invalidateQueries({ queryKey: ["books"] });
+    }
+  };
+
+  if (isLoading) return <p>로딩 중...</p>;
+  if (error) return <p className="text-red-500">책 정보를 불러오지 못했습니다.</p>;
 
   return (
     <div className="max-w-[800px] mx-auto p-6 border rounded-lg shadow-lg bg-white mt-6">
@@ -106,7 +110,7 @@ const BookDetailSection: React.FC<BookDetailProps> = ({ id }) => {
         <BookFormModal
           isEdit={true}
           bookData={book || undefined}
-          onClose={() => setIsModalOpen(false)}
+          onClose={(updated) => handleModalClose(updated)}
         />
       )}
     </div>
