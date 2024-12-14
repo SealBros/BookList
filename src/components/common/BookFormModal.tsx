@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { BookTypes } from "@/dtos/BookDto";
 import Image from "next/image";
+import { uploadImage, createBook, updateBook } from "@/lib/axios/bookApi";
+import { BookTypes } from "@/dtos/BookDto";
 
 interface BookFormProps {
   isEdit: boolean;
@@ -75,11 +75,7 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
 
       if (base64Image) {
         const filename = `book_${Date.now()}.png`;
-        const uploadResponse = await axios.post("/api/upload", {
-          base64Data: base64Image,
-          filename,
-        });
-        imageUrl = uploadResponse.data.filePath;
+        imageUrl = await uploadImage(base64Image, filename);
       }
 
       const payload = {
@@ -93,10 +89,10 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
       };
 
       if (isEdit && bookData?.id) {
-        await axios.put(`/api/books/${bookData.id}`, payload);
+        await updateBook(bookData.id, payload);
         alert("책 정보가 수정되었습니다.");
       } else {
-        await axios.post("/api/books", payload);
+        await createBook(payload);
         alert("책이 등록되었습니다.");
       }
 
