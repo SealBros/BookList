@@ -6,7 +6,7 @@ import { BookTypes } from "@/dtos/BookDto";
 interface BookFormProps {
   isEdit: boolean;
   bookData?: Partial<BookTypes>;
-  onClose: (updated: boolean) => void; // 수정 여부를 전달
+  onClose: (updated: boolean) => void;
 }
 
 const formatDate = (date: string | Date | null | undefined): string => {
@@ -31,7 +31,7 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
   });
 
   const [preview, setPreview] = useState<string | null>(bookData?.image_url || null);
-  const [base64Image, setBase64Image] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -47,16 +47,11 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        setBase64Image(base64);
-        setPreview(base64);
-        setForm((prev) => ({ ...prev, image_url: base64 }));
-      };
-      reader.readAsDataURL(file);
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      const previewUrl = URL.createObjectURL(selectedFile);
+      setPreview(previewUrl);
     }
   };
 
@@ -65,19 +60,34 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
   };
 
   const handleSubmit = async () => {
-    if (!base64Image && !isEdit) {
-      alert("이미지를 업로드하세요.");
+    const requiredFields: { [key: string]: string } = {
+      title: "책 제목",
+      author: "저자",
+      publisher: "출판사",
+      published_date: "출간 날짜",
+      quantity: "책 수량",
+      description: "책 줄거리",
+      image_url: "책 이미지",
+    };
+  
+    const missingFields = Object.keys(requiredFields).filter((key) => {
+      if (key === "image_url" && !file && !form.image_url) return true;
+      return !form[key as keyof BookTypes];
+    });
+  
+    if (missingFields.length > 0) {
+      const missingFieldNames = missingFields.map((field) => requiredFields[field]).join(", ");
+      alert(`다음 항목을 입력하세요: ${missingFieldNames}`);
       return;
     }
-
+  
     try {
       let imageUrl = form.image_url;
-
-      if (base64Image) {
-        const filename = `book_${Date.now()}.png`;
-        imageUrl = await uploadImage(base64Image, filename);
+  
+      if (file) {
+        imageUrl = await uploadImage(file);
       }
-
+  
       const payload = {
         title: form.title,
         author: form.author,
@@ -87,7 +97,7 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
         description: form.description,
         image_url: imageUrl,
       };
-
+  
       if (isEdit && bookData?.id) {
         await updateBook(bookData.id, payload);
         alert("책 정보가 수정되었습니다.");
@@ -95,13 +105,14 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
         await createBook(payload);
         alert("책이 등록되었습니다.");
       }
-
-      onClose(true); // 수정 또는 추가 완료 후 부모에 알림
+  
+      onClose(true);
     } catch (error) {
       console.error("Error:", error);
       alert("요청 중 오류가 발생했습니다.");
     }
   };
+  
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">

@@ -33,7 +33,7 @@ const BookInfo: React.FC<BookInfoProps> = ({ book }) => {
           {id}
         </div>
         <Image
-          src={image_url}
+          src={image_url || "/image/default.png"}
           alt="책 그림"
           width={160}
           height={240}
