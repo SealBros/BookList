@@ -5,9 +5,10 @@ import { BookTypes } from "@/dtos/BookDto";
 
 interface BookInfoProps {
   book: BookTypes;
+  displayIndex: number; // 추가된 prop
 }
 
-const BookInfo: React.FC<BookInfoProps> = ({ book }) => {
+const BookInfo: React.FC<BookInfoProps> = ({ book, displayIndex }) => {
   const router = useRouter();
 
   const {
@@ -21,7 +22,6 @@ const BookInfo: React.FC<BookInfoProps> = ({ book }) => {
     quantity,
   } = book;
 
-  
   const handleImageClick = () => {
     router.push(`/books/${id}`);
   };
@@ -30,7 +30,7 @@ const BookInfo: React.FC<BookInfoProps> = ({ book }) => {
     <div className="flex border p-6 rounded-lg shadow-sm max-w-[1200px] mx-auto bg-white">
       <div className="flex items-center space-x-4">
         <div className="bg-green-500 rounded-md w-10 h-10 flex items-center justify-center text-white text-sm font-bold shadow-md">
-          {id}
+          {displayIndex}
         </div>
         <Image
           src={image_url || "/image/default.png"}

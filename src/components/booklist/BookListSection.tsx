@@ -57,10 +57,11 @@ const BookListSection: React.FC = () => {
 
       <div className="mt-6 space-y-4">
         {paginatedBooks.length > 0 ? (
-          paginatedBooks.map((book) => (
+          paginatedBooks.map((book, index) => (
             <BookInfo
               key={book.id}
               book={book}
+              displayIndex={index + 1} // 현재 페이지에 따른 순번 부여 (1부터 시작)
             />
           ))
         ) : (

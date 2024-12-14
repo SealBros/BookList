@@ -39,6 +39,7 @@ export const createBook = async (payload: Partial<BookTypes>) => {
 };
 
 export const updateBook = async (id: number, payload: Partial<BookTypes>) => {
+  console.log(`Updating book with ID: ${id}`, payload);
   return axios.put(`${BASE_URL}/${id}`, payload);
 };
 
