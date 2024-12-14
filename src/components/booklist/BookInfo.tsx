@@ -1,12 +1,15 @@
 import React from "react";
 import Image from "next/image";
+import { useRouter } from "next/router";
 import { BookTypes } from "@/dtos/BookDto";
 
 interface BookInfoProps {
-  book: BookTypes; 
+  book: BookTypes;
 }
 
 const BookInfo: React.FC<BookInfoProps> = ({ book }) => {
+  const router = useRouter();
+
   const {
     id,
     image_url,
@@ -17,6 +20,11 @@ const BookInfo: React.FC<BookInfoProps> = ({ book }) => {
     description,
     quantity,
   } = book;
+
+  
+  const handleImageClick = () => {
+    router.push(`/books/${id}`);
+  };
 
   return (
     <div className="flex border p-6 rounded-lg shadow-sm max-w-[1200px] mx-auto bg-white">
@@ -29,7 +37,8 @@ const BookInfo: React.FC<BookInfoProps> = ({ book }) => {
           alt="책 그림"
           width={160}
           height={240}
-          className="w-40 h-60 object-cover border rounded-md"
+          className="w-40 h-60 object-cover border rounded-md cursor-pointer"
+          onClick={handleImageClick}
         />
       </div>
 
@@ -41,12 +50,12 @@ const BookInfo: React.FC<BookInfoProps> = ({ book }) => {
             {new Date(published_date).toLocaleDateString()}
           </p>
           <p className="text-gray-800 font-semibold">
-            <span className="text-sm font-normal text-gray-600">수량: </span>
+            <span className="text-base font-normal text-gray-600">수량: </span>
             {quantity}권
           </p>
         </div>
 
-        <div className="text-gray-700 text-sm line-clamp-2">{description}</div>
+        <div className="text-gray-700 text-base whitespace-pre-line line-clamp-2">{description}</div>
       </div>
     </div>
   );

@@ -9,13 +9,22 @@ interface BookFormProps {
   onClose: () => void;
 }
 
+const formatDate = (date: string | Date | null | undefined): string => {
+  if (!date) return "";
+  const parsedDate = new Date(date);
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(parsedDate.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) => {
   const [form, setForm] = useState<Partial<BookTypes>>({
     id: bookData?.id || 0,
     title: bookData?.title || "",
     author: bookData?.author || "",
     publisher: bookData?.publisher || "",
-    published_date: bookData?.published_date || "",
+    published_date: formatDate(bookData?.published_date) || "",
     quantity: bookData?.quantity || 1,
     description: bookData?.description || "",
     image_url: bookData?.image_url || "",
@@ -44,32 +53,35 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
       reader.onload = () => {
         const base64 = reader.result as string;
         setBase64Image(base64);
-        setPreview(base64); // 미리보기를 Base64로 설정
-        setForm((prev) => ({ ...prev, imageUrl: base64 })); // 이미지 URL 대신 Base64 저장
+        setPreview(base64);
+        setForm((prev) => ({ ...prev, image_url: base64 }));
       };
-      reader.readAsDataURL(file); // 파일을 Base64로 읽기
+      reader.readAsDataURL(file);
     }
   };
 
   const handleImageClick = () => {
-    fileInputRef.current?.click(); // 파일 선택 창 열기
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = async () => {
-    if (!base64Image) {
-      alert('이미지를 업로드하세요.');
+    if (!base64Image && !isEdit) {
+      alert("이미지를 업로드하세요.");
       return;
     }
-  
+
     try {
-      const filename = `book_${Date.now()}.png`; // 파일명 생성
-      const response = await axios.post('/api/upload', {
-        base64Data: base64Image,
-        filename,
-      });
-  
-      const imageUrl = response.data.filePath; // 저장된 파일 경로 받기
-  
+      let imageUrl = form.image_url;
+
+      if (base64Image) {
+        const filename = `book_${Date.now()}.png`;
+        const uploadResponse = await axios.post("/api/upload", {
+          base64Data: base64Image,
+          filename,
+        });
+        imageUrl = uploadResponse.data.filePath;
+      }
+
       const payload = {
         title: form.title,
         author: form.author,
@@ -79,17 +91,21 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
         description: form.description,
         image_url: imageUrl,
       };
-  
-      await axios.post('/api/books', payload);
-  
-      alert('책이 등록되었습니다.');
+
+      if (isEdit && bookData?.id) {
+        await axios.put(`/api/books/${bookData.id}`, payload);
+        alert("책 정보가 수정되었습니다.");
+      } else {
+        await axios.post("/api/books", payload);
+        alert("책이 등록되었습니다.");
+      }
+
       onClose();
     } catch (error) {
-      console.error('Error:', error);
-      alert('요청 중 오류가 발생했습니다.');
+      console.error("Error:", error);
+      alert("요청 중 오류가 발생했습니다.");
     }
   };
-  
 
   return (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
@@ -97,7 +113,6 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
         <h2 className="text-xl font-bold mb-4">{isEdit ? "책 수정하기" : "책 추가하기"}</h2>
         <div className="overflow-y-auto max-h-[70vh]">
           <div className="flex space-x-6">
-            {/* 이미지 미리보기 */}
             <div>
               <Image
                 src={preview || "/image/default.png"}
@@ -115,8 +130,6 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
                 className="hidden"
               />
             </div>
-
-            {/* 나머지 입력 필드 */}
             <div className="flex-1 space-y-2">
               <div>
                 <label className="block text-sm font-medium mb-1">책 제목</label>
@@ -181,8 +194,6 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
               </div>
             </div>
           </div>
-
-          {/* 줄거리 */}
           <div className="mt-4">
             <label className="block text-sm font-medium mb-1">책 줄거리 내용</label>
             <textarea

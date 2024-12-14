@@ -1,10 +1,10 @@
 export interface BookTypes {
   id: number;
-  imageUrl: string;
+  image_url: string;
   title: string;
   author: string;
   publisher: string;
-  publicationDate: string;
+  published_date: string;
   quantity: number;
   description: string;
-} 
+}
