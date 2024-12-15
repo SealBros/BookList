@@ -205,7 +205,7 @@ const BookFormModal: React.FC<BookFormProps> = ({ isEdit, bookData, onClose }) =
               rows={4}
             ></textarea>
             <p className="text-right text-sm text-gray-500">
-              {form.description?.length || 0} / 500 글자
+              {form.description?.length || 0} 글자
             </p>
           </div>
         </div>
