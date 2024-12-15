@@ -26,9 +26,11 @@ const BookListSection: React.FC = () => {
       book.author.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
+  const sortedBooks = [...filteredBooks].sort((a, b) => a.id - b.id);
+
+  const totalPages = Math.ceil(sortedBooks.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedBooks = filteredBooks.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedBooks = sortedBooks.slice(startIndex, startIndex + itemsPerPage);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -61,7 +63,7 @@ const BookListSection: React.FC = () => {
             <BookInfo
               key={book.id}
               book={book}
-              displayIndex={index + 1} // 현재 페이지에 따른 순번 부여 (1부터 시작)
+              displayIndex={startIndex + index + 1}
             />
           ))
         ) : (

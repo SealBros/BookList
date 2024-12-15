@@ -56,7 +56,7 @@ const BookDetailSection: React.FC<BookDetailProps> = ({ id }) => {
   if (error) return <p className="text-red-500">책 정보를 불러오지 못했습니다.</p>;
 
   return (
-    <div className="max-w-[800px] mx-auto p-6 border rounded-lg shadow-lg bg-white mt-6">
+    <div className="max-w-[900px] mx-auto p-6 border rounded-lg shadow-lg bg-white mt-6">
       <div className="flex items-start">
         <div className="w-1/3">
           <Image
