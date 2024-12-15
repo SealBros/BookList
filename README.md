@@ -480,3 +480,8 @@ if (req.method === 'DELETE') {
 - 데이터 페칭 중에 로딩 상태와 에러 메시지를 표시해 사용자가 상태를 이해할 수 있도록 구현하였습니다.
 
 ## 스크린샷 및 실행 결과
+
+
+https://github.com/user-attachments/assets/b8010bcf-de9e-42a9-b92f-d865d204ba1e
+
+
